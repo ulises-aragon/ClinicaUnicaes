@@ -12,3 +12,4 @@ C:\Users\joser\ClinicaUnicaes\obj\Debug\net10.0\refint\ClinicaUnicaes.dll
 C:\Users\joser\ClinicaUnicaes\obj\Debug\net10.0\ClinicaUnicaes.pdb
 C:\Users\joser\ClinicaUnicaes\obj\Debug\net10.0\ClinicaUnicaes.genruntimeconfig.cache
 C:\Users\joser\ClinicaUnicaes\obj\Debug\net10.0\ref\ClinicaUnicaes.dll
+C:\Users\joser\ClinicaUnicaes\obj\Debug\net10.0\ClinicaUnicaes.sourcelink.json

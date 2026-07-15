@@ -18,6 +18,23 @@
     static int[] patientPhone = new int[DATA_LENGTH];
     static int patientCount = 0;
 
+    static Array[] patientArrays = [
+        patientFile,
+        patientName,
+        patientAge,
+        patientSex,
+        patientBloodType,
+        patientPhone
+    ];
+    static string[] patientLabels = [
+        "Número de expediente",
+        "Nombre completo",
+        "Edad",
+        "Sexo",
+        "Tipo de sangre",
+        "Número de teléfono"
+    ];
+
     // Medicos
     static int[] medicCode = new int[DATA_LENGTH];
     static string[] medicName = new string[DATA_LENGTH];
@@ -25,6 +42,20 @@
     static int[] medicExperience = new int[DATA_LENGTH];
     static string[] medicSchedule = new string[DATA_LENGTH];
     static int medicCount = 0;
+    static Array[] medicArrays = [
+        medicCode,
+        medicName,
+        medicSpecialty,
+        medicExperience,
+        medicSchedule
+    ];
+    static string[] medicLabels = [
+        "Codigo de médico",
+        "Nombre",
+        "Especialidad",
+        "Años de experiencia",
+        "Horario de atención"
+    ];
 
     // Consultorios
     static int[] officeNumber = new int[DATA_LENGTH];
@@ -35,6 +66,23 @@
     static int[] officeSpots = new int[DATA_LENGTH];
     static int officeCount = 0;
 
+    static Array[] officeArrays = [
+        officeNumber,
+        officeFloor,
+        officeCapacity,
+        officeQueue,
+        officeSpots,
+        officeAvailable,
+    ];
+    static string[] officeLabels = [
+        "Número de consultorio",
+        "Piso de consultorio",
+        "Capacidad de pacientes en espera",
+        "Cantidad de pacientes esperando",
+        "Espacios disponibles",
+        "Disponible"
+    ];
+
     // Citas
     static int[] appointmentNumber = new int[DATA_LENGTH];
     static string[] appointmentPatient = new string[DATA_LENGTH];
@@ -43,6 +91,22 @@
     static string[] appointmentTime = new string[DATA_LENGTH];
     static string[] appointmentType = new string[DATA_LENGTH];
     static int appointmentCount = 0;
+    static Array[] appointmentArrays = [
+        appointmentNumber,
+        appointmentPatient,
+        appointmentMedic,
+        appointmentDate,
+        appointmentTime,
+        appointmentType
+    ];
+    static string[] appointmentLabels = [
+        "Número de cita",
+        "Paciente",
+        "Médico",
+        "Fecha",
+        "Hora",
+        "Tipo de consulta"
+    ];
 
     // Especialidades
     static string[] specialtyName = new string[DATA_LENGTH];
@@ -50,6 +114,18 @@
     static int[] specialtyOfficeAvailability = new int[DATA_LENGTH];
     static string[] specialtyInCharge = new string[DATA_LENGTH];
     static int specialtyCount = 0;
+    static Array[] specialtyArrays = [
+        specialtyName,
+        specialtyMedicCount,
+        specialtyOfficeAvailability,
+        specialtyInCharge
+    ];
+    static string[] specialtyLabels = [
+        "Nombre",
+        "Medicos asignados",
+        "Consultorios disponibles",
+        "Responsable del área"
+    ];
 
     static string BoolToString(bool value)
     {
@@ -80,16 +156,13 @@
         return false;
     }
 
-    static int FetchInArray<T>(T[] objects, T value)
+    static int FetchInArray<T>(T[] objects, T value, int count)
     {
-        for (int i = 0; i < objects.Length; i++)
+        for (int i = 0; i < count; i++)
         {
             T found = objects[i];
             if (found == null) continue;
-            if (found.Equals(value))
-            {
-                return i;
-            }
+            if (found.Equals(value)) return i;
         }
 
         return -1;
@@ -228,7 +301,22 @@
         Console.WriteLine("***========================================================================***\n");
     }
 
-    static void PrintObject(Array[] arrays, string[] labels, int index)
+    static int PromptMenu(string[] titleLines, string[] options)
+    {
+        bool valid;
+        int selection;
+
+        do
+        {
+            Console.Clear();
+            Title(titleLines);
+            GetSelection(options, out selection, out valid);
+        } while (!valid);
+
+        return selection;
+    }
+
+    static void PrintEntity(Array[] arrays, string[] labels, int index)
     {
         for (int i = 0; i < arrays.Length; i++)
         {
@@ -236,11 +324,11 @@
             object? value = array.GetValue(index);
             if (value is bool) value = BoolToString((bool) value);
 
-            Console.WriteLine($"\t\t> {labels[i] ?? "NULO"}: {array.GetValue(index) ?? "NULO"}");
+            Console.WriteLine($"\t\t> {labels[i] ?? "NULO"}: {value ?? "NULO"}");
         }
     }
 
-    static void PrintObjects(Array[] arrays, string[] labels, int count, string title)
+    static void PrintEntities(Array[] arrays, string[] labels, int count, string title)
     {
         int totalPages = (count + OBJECTS_PER_PAGE - 1) / OBJECTS_PER_PAGE;
         int page = 1;
@@ -273,7 +361,7 @@
                         Console.WriteLine("\t_______________________________________________________________\n");
                     }
 
-                    PrintObject(arrays, labels, i);
+                    PrintEntity(arrays, labels, i);
                 }                
             }
 
@@ -295,25 +383,11 @@
         } while (enabled);
     }
 
+    // Especialidades
+
     static void PrintSpecialties()
     {
-        PrintObjects(
-            [
-                specialtyName,
-                specialtyMedicCount,
-                specialtyOfficeAvailability,
-                specialtyInCharge
-            ],
-            [
-                "Nombre",
-                "Medicos asignados",
-                "Consultorios disponibles",
-                "Responsable del área"
-            ],
-            specialtyCount,
-            "ESPECIALIDADES EN SISTEMA"
-        );
-        SpecialtyMenu();
+        PrintEntities(specialtyArrays, specialtyLabels, specialtyCount, "ESPECIALIDADES EN SISTEMA");
     }
 
     static void FetchSpecialty()
@@ -331,7 +405,7 @@
         } else
         {
             string nombre = GetInput("Nombre de especialidad a buscar");
-            int index = FetchInArray(specialtyName, nombre);
+            int index = FetchInArray(specialtyName, nombre, specialtyCount);
 
             if (index == -1)
             {
@@ -339,26 +413,11 @@
             } else
             {
                 Console.WriteLine("\tEspecialidad encontrada.\n");
-                PrintObject(
-                    [
-                        specialtyName,
-                        specialtyMedicCount,
-                        specialtyOfficeAvailability,
-                        specialtyInCharge
-                    ],
-                    [
-                        "Nombre",
-                        "Medicos asignados",
-                        "Consultorios disponibles",
-                        "Responsable del área"
-                    ],
-                    index
-                );
+                PrintEntity(specialtyArrays, specialtyLabels, index);
             }
         }
 
         AwaitKey();
-        SpecialtyMenu();
     }
 
     static void RegisterSpecialty()
@@ -377,7 +436,7 @@
         } else
         {
             string name = GetInput("Nombre de especialidad");
-            if (FetchInArray(specialtyName, name) != -1)
+            if (FetchInArray(specialtyName, name, specialtyCount) != -1)
             {
                 Console.WriteLine("\tNo es posible registrar la especialidad.");
                 Console.WriteLine("\t¡Ya existe una especialidad con ese nombre!");
@@ -394,79 +453,56 @@
                 specialtyCount++;
 
                 Console.WriteLine("\tEspecialidad registrada exitosamente.");
+                PrintEntity(specialtyArrays, specialtyLabels, specialtyCount - 1);
             }
         }
 
         AwaitKey();
-        SpecialtyMenu();
     }
 
     static void SpecialtyMenu()
     {
-        bool valid;
-        int selection;
+        string[] title =
+        [
+            "\t\t\tESPECIALIDADES",
+            "\t\tMódulo de gestión de especialidades."
+        ];
+        string[] options =
+        [
+            "Registrar especialidad",
+            "Consultar especialidad",
+            "Mostrar información registrada",
+            "Regresar"
+        ];
 
-        do
+        bool exit = false;
+        while (!exit)
         {
-            Console.Clear();
-            Title(
-                [
-                    "\t\t\tESPECIALIDADES",
-                    "\t\tMódulo de gestión de especialidades."
-                ]
-            );
-            GetSelection(
-                [
-                    "Registrar especialidad",
-                    "Consultar especialidad",
-                    "Mostrar información registrada",
-                    "Regresar"
-                ],
-                out selection,
-                out valid
-            );
-        } while (!valid);
+            int selection = PromptMenu(title, options);
 
-        switch(selection)
-        {  
-            case 1:
-                RegisterSpecialty();
-                break;
-            case 2:
-                FetchSpecialty();
-                break;
-            case 3:
-                PrintSpecialties();
-                break;
-            default:
-                OpenMenu();
-                break;
+            switch (selection)
+            {
+                case 1:
+                    RegisterSpecialty();
+                    break;
+                case 2:
+                    FetchSpecialty();
+                    break;
+                case 3:
+                    PrintSpecialties();
+                    break;
+                default:
+                    exit = true;
+                    break;
+            }
         }
     }
 
+    // Citas
+
     static void PrintAppointments()
     {
-        PrintObjects(
-            [
-                appointmentNumber,
-                appointmentPatient,
-                appointmentMedic,
-                appointmentDate,
-                appointmentTime,
-                appointmentType
-            ],
-            [
-                "Número de cita",
-                "Paciente",
-                "Médico",
-                "Fecha",
-                "Hora",
-                "Tipo de consulta"
-            ],
-            appointmentCount,
-            "CITAS EN SISTEMA"
-        );
-        AppointmentMenu();
+        PrintEntities(appointmentArrays, appointmentLabels, appointmentCount, "CITAS EN SISTEMA");
     }
 
     static void FetchAppointment()
@@ -484,7 +520,7 @@
         } else
         {
             int number = GetIntInput("Número de cita a buscar");
-            int index = FetchInArray(appointmentNumber, number);
+            int index = FetchInArray(appointmentNumber, number, appointmentCount);
 
             if (index == -1)
             {
@@ -492,30 +528,11 @@
             } else
             {
                 Console.WriteLine("\tCita encontrada.\n");
-                PrintObject(
-                    [
-                        appointmentNumber,
-                        appointmentPatient,
-                        appointmentMedic,
-                        appointmentDate,
-                        appointmentTime,
-                        appointmentType
-                    ],
-                    [
-                        "Número de cita",
-                        "Paciente",
-                        "Médico",
-                        "Fecha",
-                        "Hora",
-                        "Tipo de consulta"
-                    ],
-                    index
-                );
+                PrintEntity(appointmentArrays, appointmentLabels, index);
             }
         }
 
         AwaitKey();
-        AppointmentMenu();
     }
 
     static void RegisterAppointment()
@@ -534,7 +551,7 @@
         } else
         {
             int number = GetIntInput("Número de cita");
-            if (FetchInArray(appointmentNumber, number) != -1)
+            if (FetchInArray(appointmentNumber, number, appointmentCount) != -1)
             {
                 Console.WriteLine("\tNo es posible registrar la cita.");
                 Console.WriteLine("\t¡Ya existe una cita con ese número!");
@@ -555,79 +572,56 @@
                 appointmentCount++;
 
                 Console.WriteLine("\tLa cita se ha registrado exitosamente.");
+                PrintEntity(appointmentArrays, appointmentLabels, appointmentCount - 1);
             }
         }
 
         AwaitKey();
-        AppointmentMenu();
     }
 
     static void AppointmentMenu()
     {
-        bool valid;
-        int selection;
+        string[] title =
+        [
+            "\t\t\tCITAS",
+            "\t\tMódulo de gestión de citas."
+        ];
+        string[] options =
+        [
+            "Registrar cita",
+            "Consultar cita",
+            "Mostrar información registrada",
+            "Regresar"
+        ];
 
-        do
+        bool exit = false;
+        while (!exit)
         {
-            Console.Clear();
-            Title(
-                [
-                    "\t\t\tCITAS",
-                    "\t\tMódulo de gestión de citas."
-                ]
-            );
-            GetSelection(
-                [
-                    "Registrar cita",
-                    "Consultar cita",
-                    "Mostrar información registrada",
-                    "Regresar"
-                ],
-                out selection,
-                out valid
-            );
-        } while (!valid);
+            int selection = PromptMenu(title, options);
 
-        switch(selection)
-        {  
-            case 1:
-                RegisterAppointment();
-                break;
-            case 2:
-                FetchAppointment();
-                break;
-            case 3:
-                PrintAppointments();
-                break;
-            default:
-                OpenMenu();
-                break;
+            switch (selection)
+            {
+                case 1:
+                    RegisterAppointment();
+                    break;
+                case 2:
+                    FetchAppointment();
+                    break;
+                case 3:
+                    PrintAppointments();
+                    break;
+                default:
+                    exit = true;
+                    break;
+            }
         }
     }
 
+    // Consultorios
+
     static void PrintOffices()
     {
-        PrintObjects(
-            [
-                officeNumber,
-                officeFloor,
-                officeCapacity,
-                officeQueue,
-                officeSpots,
-                officeAvailable,
-            ],
-            [
-                "Número de consultorio",
-                "Piso de consultorio",
-                "Capacidad de pacientes en espera",
-                "Cantidad de pacientes esperando",
-                "Espacios disponibles",
-                "Disponible"
-            ],
-            officeCount,
-            "CONSULTORIOS EN SISTEMA"
-        );
-        OfficeMenu();
+        PrintEntities(officeArrays, officeLabels, officeCount, "CONSULTORIOS EN SISTEMA");
     }
 
     static void FetchOffice()
@@ -645,7 +639,7 @@
         } else
         {
             int number = GetIntInput("Número a buscar");
-            int index = FetchInArray(officeNumber, number);
+            int index = FetchInArray(officeNumber, number, officeCount);
 
             if (index == -1)
             {
@@ -653,30 +647,11 @@
             } else
             {
                 Console.WriteLine("\tConsultorio encontrado.\n");
-                PrintObject(
-                    [
-                        officeNumber,
-                        officeFloor,
-                        officeCapacity,
-                        officeQueue,
-                        officeSpots,
-                        officeAvailable,
-                    ],
-                    [
-                        "Número de consultorio",
-                        "Piso de consultorio",
-                        "Capacidad de pacientes en espera",
-                        "Cantidad de pacientes esperando",
-                        "Espacios disponibles",
-                        "Disponible"
-                    ],
-                    index
-                );
+                PrintEntity(officeArrays, officeLabels, index);
             }
         }
 
         AwaitKey();
-        OfficeMenu();
     }
 
     static void RegisterOffice()
@@ -695,9 +670,9 @@
         } else
         {
             int number = GetIntInput("Número de consultorio");
-            if (FetchInArray(officeNumber, number) != -1)
+            if (FetchInArray(officeNumber, number, officeCount) != -1)
             {
-                Console.WriteLine("\tNo es posible registrar el mconsultorioédico.");
+                Console.WriteLine("\tNo es posible registrar el consultorio.");
                 Console.WriteLine("\t¡Ya existe un consultorio con ese número!");
             } else
             {
@@ -718,7 +693,9 @@
                 Console.WriteLine($"\tEspacios disponibles: {spots}\n");
                 Console.WriteLine("\tConsultorio registrado exitosamente.");
 
-                if (queue >= capacity)
+                PrintEntity(officeArrays, officeLabels, officeCount - 1);
+
+                if (queue > capacity)
                 {
                     Console.WriteLine("\tADVERTENCIA: Este consultorio esta en su limite de capacidad de pacientes por atender.");
                 }
@@ -726,73 +703,51 @@
         }
 
         AwaitKey();
-        OfficeMenu();
     }
 
     static void OfficeMenu()
     {
-        bool valid;
-        int selection;
+        string[] title =
+        [
+            "\t\t\tCONSULTORIOS",
+            "\t\tMódulo de gestión de consultorios."
+        ];
+        string[] options =
+        [
+            "Registrar consultorio",
+            "Consultar consultorio",
+            "Mostrar información registrada",
+            "Regresar"
+        ];
 
-        do
+        bool exit = false;
+        while (!exit)
         {
-            Console.Clear();
-            Title(
-                [
-                    "\t\t\tCONSULTORIOS",
-                    "\t\tMódulo de gestión de consultorios."
-                ]
-            );
-            GetSelection(
-                [
-                    "Registrar consultorio",
-                    "Consultar consultorio",
-                    "Mostrar información registrada",
-                    "Regresar"
-                ],
-                out selection,
-                out valid
-            );
-        } while (!valid);
+            int selection = PromptMenu(title, options);
 
-        switch(selection)
-        {  
-            case 1:
-                RegisterOffice();
-                break;
-            case 2:
-                FetchOffice();
-                break;
-            case 3:
-                PrintOffices();
-                break;
-            default:
-                OpenMenu();
-                break;
+            switch (selection)
+            {
+                case 1:
+                    RegisterOffice();
+                    break;
+                case 2:
+                    FetchOffice();
+                    break;
+                case 3:
+                    PrintOffices();
+                    break;
+                default:
+                    exit = true;
+                    break;
+            }
         }
     }
 
+    // Medicos
+
     static void PrintMedics()
     {
-        PrintObjects(
-            [
-                medicCode,
-                medicName,
-                medicSpecialty,
-                medicExperience,
-                medicSchedule
-            ],
-            [
-                "Codigo de médico",
-                "Nombre",
-                "Especialidad",
-                "Años de experiencia",
-                "Horario de atención"
-            ],
-            medicCount,
-            "MÉDICOS EN SISTEMA"
-        );
-        MedicMenu();
+        PrintEntities(medicArrays, medicLabels, medicCount, "MÉDICOS EN SISTEMA");
     }
 
     static void FetchMedic()
@@ -810,7 +765,7 @@
         } else
         {
             int code = GetIntInput("Código a buscar");
-            int index = FetchInArray(medicCode, code);
+            int index = FetchInArray(medicCode, code, medicCount);
 
             if (index == -1)
             {
@@ -818,28 +773,11 @@
             } else
             {
                 Console.WriteLine("\tMédico encontrado.\n");
-                PrintObject(
-                    [
-                        medicCode,
-                        medicName,
-                        medicSpecialty,
-                        medicExperience,
-                        medicSchedule
-                    ],
-                    [
-                        "Codigo de médico",
-                        "Nombre",
-                        "Especialidad",
-                        "Años de experiencia",
-                        "Horario de atención"
-                    ],
-                    index
-                );
+                PrintEntity(medicArrays, medicLabels, index);
             }
         }
 
         AwaitKey();
-        MedicMenu();
     }
 
     static void RegisterMedic()
@@ -862,7 +800,7 @@
         } else
         {
             int code = GetIntInput("Código de médico");
-            if (FetchInArray(medicCode, code) != -1)
+            if (FetchInArray(medicCode, code, medicCount) != -1)
             {
                 Console.WriteLine("\tNo es posible registrar el médico.");
                 Console.WriteLine("\t¡Ya existe un médico con ese código!");
@@ -880,86 +818,63 @@
                 medicSchedule[medicCount] = schedule;
                 medicCount++;
 
-                int specialtyIndex = FetchInArray(specialtyName, specialty);
+                int specialtyIndex = FetchInArray(specialtyName, specialty, specialtyCount);
                 if (specialtyIndex != -1)
                 {
                     specialtyMedicCount[specialtyIndex]++;
                 }
 
                 Console.WriteLine("\tMédico registrado exitosamente.");
+                PrintEntity(medicArrays, medicLabels, medicCount - 1);
             }
         }
 
         AwaitKey();
-        MedicMenu();
     }
 
     static void MedicMenu()
     {
-        bool valid;
-        int selection;
+        string[] title =
+        [
+            "\t\t\tMÉDICOS",
+            "\t\tMódulo de gestión de médicos."
+        ];
+        string[] options =
+        [
+            "Registrar médico",
+            "Consultar médico",
+            "Mostrar información registrada",
+            "Regresar"
+        ];
 
-        do
+        bool exit = false;
+        while (!exit)
         {
-            Console.Clear();
-            Title(
-                [
-                    "\t\t\tMÉDICOS",
-                    "\t\tMódulo de gestión de médicos."
-                ]
-            );
-            GetSelection(
-                [
-                    "Registrar médico",
-                    "Consultar médico",
-                    "Mostrar información registrada",
-                    "Regresar"
-                ],
-                out selection,
-                out valid
-            );
-        } while (!valid);
+            int selection = PromptMenu(title, options);
 
-        switch(selection)
-        {  
-            case 1:
-                RegisterMedic();
-                break;
-            case 2:
-                FetchMedic();
-                break;
-            case 3:
-                PrintMedics();
-                break;
-            default:
-                OpenMenu();
-                break;
+            switch (selection)
+            {
+                case 1:
+                    RegisterMedic();
+                    break;
+                case 2:
+                    FetchMedic();
+                    break;
+                case 3:
+                    PrintMedics();
+                    break;
+                default:
+                    exit = true;
+                    break;
+            }
         }
     }
 
+    // Pacientes
+
     static void PrintPatients()
     {
-        PrintObjects(
-            [
-                patientFile,
-                patientName,
-                patientAge,
-                patientSex,
-                patientBloodType,
-                patientPhone
-            ],
-            [
-                "Número de expediente",
-                "Nombre completo",
-                "Edad",
-                "Sexo",
-                "Tipo de sangre",
-                "Número de teléfono"
-            ],
-            patientCount,
-            "PACIENTES EN SISTEMA"
-        );
-        PatientMenu();
+        PrintEntities(patientArrays, patientLabels, patientCount, "PACIENTES EN SISTEMA");
     }
 
     static void FetchPatient()
@@ -977,7 +892,7 @@
         } else
         {
             int file = GetIntInput("Número de expediente a buscar");
-            int index = FetchInArray(patientFile, file);
+            int index = FetchInArray(patientFile, file, patientCount);
 
             if (index == -1)
             {
@@ -985,30 +900,11 @@
             } else
             {
                 Console.WriteLine("\tPaciente encontrado.\n");
-                PrintObject(
-                    [
-                        patientFile,
-                        patientName,
-                        patientAge,
-                        patientSex,
-                        patientBloodType,
-                        patientPhone
-                    ],
-                    [
-                        "Número de expediente",
-                        "Nombre completo",
-                        "Edad",
-                        "Sexo",
-                        "Tipo de sangre",
-                        "Número de teléfono"
-                    ],
-                    index
-                );
+                PrintEntity(patientArrays, patientLabels, index);
             }
         }
 
         AwaitKey();
-        PatientMenu();
     }
 
     static void RegisterPatient()
@@ -1027,7 +923,7 @@
         } else
         {
             int file = GetIntInput("Número de expediente");
-            if (FetchInArray(patientFile, file) != -1)
+            if (FetchInArray(patientFile, file, patientCount) != -1)
             {
                 Console.WriteLine("\tNo es posible registrar el paciente.");
                 Console.WriteLine("\t¡Ya existe un paciente con ese número de expediente!");
@@ -1048,99 +944,97 @@
                 patientCount++;
 
                 Console.WriteLine("\tPaciente registrado exitosamente.");
+                PrintEntity(patientArrays, patientLabels, patientCount - 1);
             }
         }
 
         AwaitKey();
-        PatientMenu();
     }
 
     static void PatientMenu()
     {
-        bool valid;
-        int selection;
+        string[] title =
+        [
+            "\t\t\tPACIENTES",
+            "\t\tMódulo de gestión de pacientes."
+        ];
+        string[] options =
+        [
+            "Registrar paciente",
+            "Consultar paciente",
+            "Mostrar información registrada",
+            "Regresar"
+        ];
 
-        do
+        bool exit = false;
+        while (!exit)
         {
-            Console.Clear();
-            Title(
-                [
-                    "\t\t\tPACIENTES",
-                    "\t\tMódulo de gestión de pacientes."
-                ]
-            );
-            GetSelection(
-                [
-                    "Registrar paciente",
-                    "Consultar paciente",
-                    "Mostrar información registrada",
-                    "Regresar"
-                ],
-                out selection,
-                out valid
-            );
-        } while (!valid);
+            int selection = PromptMenu(title, options);
 
-        switch(selection)
-        {  
-            case 1:
-                RegisterPatient();
-                break;
-            case 2:
-                FetchPatient();
-                break;
-            case 3:
-                PrintPatients();
-                break;
-            default:
-                OpenMenu();
-                break;
+            switch (selection)
+            {
+                case 1:
+                    RegisterPatient();
+                    break;
+                case 2:
+                    FetchPatient();
+                    break;
+                case 3:
+                    PrintPatients();
+                    break;
+                default:
+                    exit = true;
+                    break;
+            }
         }
     }
 
+    // Menu
+
     static void OpenMenu()
     {
-        bool valid;
-        int selection;
+        string[] title =
+        [
+            "\t\t\tCLINICA MEDICA UNICAES",
+            "\t\t\tSistema Administrativo"
+        ];
+        string[] options =
+        [
+            "Administración de Pacientes",
+            "Administración de Medicos",
+            "Administración de Consultorios",
+            "Administración de Citas",
+            "Administración de Especialidades",
+            "Salir"
+        ];
 
-        do
+        bool exit = false;
+        while (!exit)
         {
-            Console.Clear();
-            Title(["\t\t\tCLINICA MEDICA UNICAES", "\t\t\tSistema Administrativo"]);
-            GetSelection(
-                [
-                    "Administración de Pacientes",
-                    "Administración de Medicos", 
-                    "Administración de Consultorios", 
-                    "Administración de Citas", 
-                    "Administración de Especialidades", 
-                    "Salir" 
-                ], 
-                out selection, 
-                out valid
-            );
-        } while (!valid);
+            int selection = PromptMenu(title, options);
 
-        switch (selection)
-        {
-            case 1:
-                PatientMenu();
-                break;
-            case 2:
-                MedicMenu();
-                break;
-            case 3:
-                OfficeMenu();
-                break;
-            case 4:
-                AppointmentMenu();
-                break;
-            case 5:
-                SpecialtyMenu();
-                break;
-            default:
-                AwaitKey("Muchas gracias por utilizar el sistema.");
-                break;
+            switch (selection)
+            {
+                case 1:
+                    PatientMenu();
+                    break;
+                case 2:
+                    MedicMenu();
+                    break;
+                case 3:
+                    OfficeMenu();
+                    break;
+                case 4:
+                    AppointmentMenu();
+                    break;
+                case 5:
+                    SpecialtyMenu();
+                    break;
+                default:
+                    exit = true;
+                    AwaitKey("Muchas gracias por utilizar el sistema.");
+                    break;
+            }
         }
     }
 
